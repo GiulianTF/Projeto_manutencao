@@ -1,0 +1,152 @@
+/* =========================================================
+   Design tokens — única fonte de cores, espaçamentos e tipografia.
+   Componentes NUNCA usam valores soltos; sempre var(--token).
+   ========================================================= */
+
+:root {
+  /* Tipografia */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.125rem;
+  --fs-xl: 1.375rem;
+  --fs-2xl: 1.75rem;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --lh-tight: 1.25;
+  --lh-normal: 1.5;
+
+  /* Espaçamento (escala de 4px) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 48px;
+
+  /* Raios, toque, layout */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-full: 999px;
+  --touch-target: 48px;
+  --sidebar-width: 248px;
+  --topbar-height: 56px;
+  --bottomnav-height: 64px;
+  --content-max: 1200px;
+  --transition: 150ms ease;
+
+  /* Superfícies e texto */
+  --color-bg: #f4f6f9;
+  --color-surface: #ffffff;
+  --color-surface-2: #f0f2f6;
+  --color-border: #dfe3ea;
+  --color-border-strong: #c5ccd8;
+  --color-text: #18202b;
+  --color-text-muted: #5d6878;
+  --color-text-subtle: #8892a1;
+
+  /* Marca / ações */
+  --color-primary: #1f5fbf;
+  --color-primary-hover: #194f9f;
+  --color-primary-soft: #e3edfb;
+  --color-on-primary: #ffffff;
+  --color-danger: #c62828;
+  --color-danger-hover: #a61f1f;
+  --color-danger-soft: #fde4e4;
+  --color-warning: #b26a00;
+  --color-warning-soft: #fff1d6;
+  --color-success: #17693a;
+  --color-success-soft: #dcf5e6;
+  --color-focus: #4c8dff;
+
+  /* Status das demandas (fundo / texto / marcador) */
+  --status-pendente-bg: #fff1d6;
+  --status-pendente-fg: #8a5a00;
+  --status-pendente-dot: #e09a1a;
+  --status-em_andamento-bg: #e1ecff;
+  --status-em_andamento-fg: #1f4fa3;
+  --status-em_andamento-dot: #2f6fd6;
+  --status-aguardando_material-bg: #efe6ff;
+  --status-aguardando_material-fg: #6131a8;
+  --status-aguardando_material-dot: #8551d6;
+  --status-concluido-bg: #dcf5e6;
+  --status-concluido-fg: #17693a;
+  --status-concluido-dot: #22a05a;
+  --status-cancelado-bg: #eceef1;
+  --status-cancelado-fg: #5d6878;
+  --status-cancelado-dot: #8892a1;
+
+  /* Prioridades */
+  --priority-baixa-bg: #eceef1;
+  --priority-baixa-fg: #5d6878;
+  --priority-normal-bg: #e3edfb;
+  --priority-normal-fg: #1f4fa3;
+  --priority-alta-bg: #ffe8d6;
+  --priority-alta-fg: #a2470b;
+  --priority-urgente-bg: #fde2e2;
+  --priority-urgente-fg: #b01e1e;
+
+  /* Sombras */
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
+  --shadow-lg: 0 12px 32px rgba(16, 24, 40, 0.16);
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0f141b;
+    --color-surface: #171d26;
+    --color-surface-2: #1e2531;
+    --color-border: #2a3341;
+    --color-border-strong: #3a4556;
+    --color-text: #e6eaf0;
+    --color-text-muted: #a3adbc;
+    --color-text-subtle: #76808f;
+
+    --color-primary: #4c8dff;
+    --color-primary-hover: #6aa0ff;
+    --color-primary-soft: #1b2b45;
+    --color-on-primary: #0b1220;
+    --color-danger: #f26b6b;
+    --color-danger-hover: #f58a8a;
+    --color-danger-soft: #3a1c1f;
+    --color-warning: #f0b450;
+    --color-warning-soft: #3a2c12;
+    --color-success: #5fd08f;
+    --color-success-soft: #15301f;
+
+    --status-pendente-bg: #3a2c12;
+    --status-pendente-fg: #f3c56f;
+    --status-em_andamento-bg: #1b2b45;
+    --status-em_andamento-fg: #8db6ff;
+    --status-aguardando_material-bg: #2b2042;
+    --status-aguardando_material-fg: #c2a2f5;
+    --status-concluido-bg: #15301f;
+    --status-concluido-fg: #7fdca5;
+    --status-cancelado-bg: #252c37;
+    --status-cancelado-fg: #a3adbc;
+
+    --priority-baixa-bg: #252c37;
+    --priority-baixa-fg: #a3adbc;
+    --priority-normal-bg: #1b2b45;
+    --priority-normal-fg: #8db6ff;
+    --priority-alta-bg: #3a2614;
+    --priority-alta-fg: #f5a868;
+    --priority-urgente-bg: #3a1c1f;
+    --priority-urgente-fg: #f58a8a;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
+
+    color-scheme: dark;
+  }
+}
