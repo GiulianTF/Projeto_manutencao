@@ -1,6 +1,7 @@
 // Implementação local (localStorage + IndexedDB) usada enquanto o Supabase
 // não está configurado. Sincroniza entre abas, o que permite simular dois usuários.
 
+import { compareRoutines, WEEKDAY_ORDER } from '@/types/domain';
 import type {
   BackupData,
   Demand,
@@ -33,6 +34,9 @@ interface LocalDB {
   currentUserId: string;
 }
 
+type StoredRoutine = Omit<Routine, 'weekdays'> & { weekdays?: number[]; weekday?: number };
+type StoredLocalDB = Omit<LocalDB, 'routines'> & { routines: StoredRoutine[] };
+
 function seed(): LocalDB {
   const me: Profile = {
     id: uuid(),
@@ -56,7 +60,18 @@ function seed(): LocalDB {
 function load(): LocalDB {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) return JSON.parse(raw) as LocalDB;
+    if (raw) {
+      const stored = JSON.parse(raw) as StoredLocalDB;
+      const routines = stored.routines.map((routine) => {
+        const { weekday, weekdays: storedWeekdays, ...rest } = routine;
+        const candidates = (storedWeekdays ?? []).filter((day) => Number.isInteger(day) && day >= 0 && day <= 6);
+        const selected = new Set(candidates.length ? candidates : [weekday ?? 1]);
+        return { ...rest, weekdays: WEEKDAY_ORDER.filter((day) => selected.has(day)) };
+      });
+      const db: LocalDB = { ...stored, routines };
+      if (stored.routines.some((routine) => routine.weekday !== undefined || !routine.weekdays?.length)) persist(db);
+      return db;
+    }
   } catch {
     // dados corrompidos ou storage bloqueado: recomeça
   }
@@ -220,7 +235,7 @@ export const localStore: DataStore & LocalTools = {
   listHistory: (demandId) =>
     read((db) => db.history.filter((h) => h.demand_id === demandId).sort((a, b) => a.id - b.id)),
 
-  listRoutines: () => read((db) => [...db.routines].sort((a, b) => a.weekday - b.weekday || a.name.localeCompare(b.name))),
+  listRoutines: () => read((db) => [...db.routines].sort(compareRoutines)),
 
   async createRoutine(input: RoutineInput) {
     return mutate((db) => {

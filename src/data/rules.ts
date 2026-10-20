@@ -48,7 +48,7 @@ export function occurrenceDates(routine: Routine, from: string, until: string): 
   let d = from > routine.starts_on ? from : routine.starts_on;
   while (d <= until) {
     if (
-      parseDateOnly(d).getDay() === routine.weekday &&
+      routine.weekdays.includes(parseDateOnly(d).getDay()) &&
       Math.floor(daysBetween(routine.starts_on, d) / 7) % routine.interval_weeks === 0
     ) {
       dates.push(d);
@@ -59,9 +59,9 @@ export function occurrenceDates(routine: Routine, from: string, until: string): 
 }
 
 /** A alteração mexe em quando a rotina acontece? (aí as ocorrências futuras são refeitas) */
-export function changesSchedule(patch: Partial<Pick<Routine, 'weekday' | 'interval_weeks' | 'starts_on' | 'active'>>) {
+export function changesSchedule(patch: Partial<Pick<Routine, 'weekdays' | 'interval_weeks' | 'starts_on' | 'active'>>) {
   return (
-    patch.weekday !== undefined ||
+    patch.weekdays !== undefined ||
     patch.interval_weeks !== undefined ||
     patch.starts_on !== undefined ||
     patch.active !== undefined

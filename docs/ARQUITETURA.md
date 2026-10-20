@@ -74,7 +74,7 @@ auth.users ──1:1── profiles (nome, papel, ativo)
 | `demands` | `code` (nº sequencial), `title`, `description`, `status`, `priority`, `opened_on`, `due_date`, `completed_at`, `observations`, `time_spent_minutes`, `responsible_id`, `created_by`, `updated_by` |
 | `demand_photos` | `demand_id`, `kind` (`antes`/`depois`), `storage_path`, `caption` |
 | `demand_history` | `demand_id`, `actor_id`, `action`, `field`, `old_value`, `new_value`, `created_at` |
-| `routines` | `name`, `description`, `weekday` (0–6), `interval_weeks`, `starts_on`, `responsible_id`, `active` |
+| `routines` | `name`, `description`, `weekdays` (lista de dias, 0–6), `interval_weeks`, `starts_on`, `responsible_id`, `active` |
 | `routine_occurrences` | `routine_id`, `scheduled_date` (único por rotina), `status`, `done_at`, `done_by`, `observations`, `time_spent_minutes` |
 
 Decisões:
@@ -146,7 +146,7 @@ Nova ──► Pendente ──► Em andamento ──► Concluído
 
 ## 7. Fluxo das rotinas
 
-- A **rotina** é o modelo ("Verificar iluminação, toda segunda, a cada 1 semana").
+- A **rotina** é o modelo ("Verificar iluminação, toda segunda e quarta, a cada 1 semana").
 - A **ocorrência** é a execução de uma data específica, com status, observação e tempo próprios.
 - A função `generate_routine_occurrences(de, até)` cria as ocorrências que faltam. Ela é idempotente
   (`unique(routine_id, scheduled_date)`), então pode rodar quantas vezes quiser:

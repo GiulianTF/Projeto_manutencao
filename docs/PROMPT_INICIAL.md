@@ -177,22 +177,22 @@ Cada rotina deverá possuir:
 
 - Nome;
 - Descrição;
-- Dia da semana;
+- Um ou mais dias da semana;
 - Responsável;
 - Periodicidade;
 - Ativa/inativa.
 
-O sistema deverá gerar as ocorrências das rotinas semanalmente.
+O sistema deverá gerar uma ocorrência em cada dia selecionado, respeitando a periodicidade semanal.
 
 Exemplo:
 
 Rotina:
 "Verificar iluminação"
 
-Dia:
-Segunda-feira
+Dias:
+Segunda-feira, quarta-feira e sexta-feira
 
-Toda semana deverá aparecer uma nova ocorrência dessa atividade.
+Toda semana deverá aparecer uma nova ocorrência dessa atividade em cada um desses dias.
 
 É importante diferenciar:
 

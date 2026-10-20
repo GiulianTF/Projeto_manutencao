@@ -8,7 +8,7 @@ import { OccurrenceItem } from '@/features/routines/OccurrenceItem';
 import { RoutineFormDialog } from '@/features/routines/RoutineFormDialog';
 import { useOccurrences } from '@/features/routines/useOccurrences';
 import { addDays, formatDate, formatWeekdayShort, parseDateOnly, startOfWeekISO, todayISO } from '@/lib/date';
-import { intervalLabel, WEEKDAY_LABEL, type Routine } from '@/types/domain';
+import { intervalLabel, weekdaysShortLabel, type Routine } from '@/types/domain';
 
 type Tab = 'semana' | 'cadastro';
 
@@ -82,7 +82,7 @@ function WeekView(props: { weekStart: string; onWeekChange: (weekStart: string) 
     return (
       <div className="card">
         <EmptyState icon={Repeat} title="Nenhuma rotina cadastrada">
-          <p>Ex.: verificar lâmpadas toda segunda-feira.</p>
+          <p>Ex.: molhar as plantas às segundas, quartas e sextas.</p>
           <Button onClick={props.onCreate}>
             <Plus size={18} /> Cadastrar rotina
           </Button>
@@ -180,7 +180,7 @@ function RoutineCatalog({ onEdit }: { onEdit: (routine: Routine) => void }) {
           <div className="routine-card__info">
             <h3 className="routine-card__name">{r.name}</h3>
             <p className="text-muted routine-card__meta">
-              {WEEKDAY_LABEL[r.weekday]} · {intervalLabel(r.interval_weeks)} · {nameOf(r.responsible_id)}
+              {weekdaysShortLabel(r.weekdays)} · {intervalLabel(r.interval_weeks)} · {nameOf(r.responsible_id)}
             </p>
             {r.description && <p className="routine-card__desc">{r.description}</p>}
           </div>

@@ -26,7 +26,9 @@ abertas se sincronizam.
 ## Configurando o Supabase
 
 1. Crie um projeto em [supabase.com](https://supabase.com).
-2. No **SQL Editor**, rode [`supabase/migrations/0001_schema_inicial.sql`](supabase/migrations/0001_schema_inicial.sql).
+2. No **SQL Editor**, rode [`supabase/migrations/0001_schema_inicial.sql`](supabase/migrations/0001_schema_inicial.sql) e depois
+   [`supabase/migrations/0002_rotinas_varios_dias.sql`](supabase/migrations/0002_rotinas_varios_dias.sql).
+   Se o projeto Supabase já existe e aplicou a migração 0001, rode somente a 0002.
 3. Em **Authentication → Users**, crie os usuários da equipe (e-mail e senha). Opcional: em *user
    metadata*, informe `{"full_name": "Nome"}`.
 4. Copie `.env.example` para `.env.local` e preencha a URL e a chave *publishable/anon* (em

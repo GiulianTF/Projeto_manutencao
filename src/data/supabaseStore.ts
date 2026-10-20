@@ -2,6 +2,7 @@
 // ocorrências) ficam no banco — ver supabase/migrations.
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { compareRoutines } from '@/types/domain';
 import type {
   BackupData,
   Demand,
@@ -121,7 +122,7 @@ export function createSupabaseStore(sb: SupabaseClient): DataStore {
     },
 
     async listRoutines() {
-      return check<Routine[]>(await sb.from('routines').select('*').order('weekday').order('name'));
+      return check<Routine[]>(await sb.from('routines').select('*')).sort(compareRoutines);
     },
 
     async createRoutine(input) {

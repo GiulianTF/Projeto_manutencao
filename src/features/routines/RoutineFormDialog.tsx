@@ -3,7 +3,14 @@ import { Button, Dialog, errorMessage, Field, useToast } from '@/components/ui';
 import { store } from '@/data';
 import { useProfiles } from '@/data/hooks';
 import { todayISO } from '@/lib/date';
-import { INTERVAL_OPTIONS, WEEKDAY_LABEL, type Routine, type RoutineInput } from '@/types/domain';
+import {
+  INTERVAL_OPTIONS,
+  WEEKDAY_ORDER,
+  WEEKDAY_LABEL,
+  WEEKDAY_SHORT_LABEL,
+  type Routine,
+  type RoutineInput,
+} from '@/types/domain';
 
 interface RoutineFormDialogProps {
   open: boolean;
@@ -14,32 +21,31 @@ interface RoutineFormDialogProps {
 const EMPTY: RoutineInput = {
   name: '',
   description: null,
-  weekday: 1,
+  weekdays: [1],
   interval_weeks: 1,
   starts_on: todayISO(),
   responsible_id: null,
   active: true,
 };
 
-// Ordem de exibição: segunda a domingo
-const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
-
 export function RoutineFormDialog({ open, routine, onClose }: RoutineFormDialogProps) {
   const toast = useToast();
   const { activeProfiles } = useProfiles();
   const [values, setValues] = useState<RoutineInput>(EMPTY);
   const [error, setError] = useState<string | null>(null);
+  const [daysError, setDaysError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     setError(null);
+    setDaysError(null);
     setValues(
       routine
         ? {
             name: routine.name,
             description: routine.description,
-            weekday: routine.weekday,
+            weekdays: [...routine.weekdays],
             interval_weeks: routine.interval_weeks,
             starts_on: routine.starts_on,
             responsible_id: routine.responsible_id,
@@ -53,9 +59,23 @@ export function RoutineFormDialog({ open, routine, onClose }: RoutineFormDialogP
     setValues((v) => ({ ...v, [key]: value }));
   }
 
+  function toggleWeekday(day: number) {
+    setValues((v) => {
+      const selected = new Set(v.weekdays);
+      if (selected.has(day)) selected.delete(day);
+      else selected.add(day);
+      return { ...v, weekdays: WEEKDAY_ORDER.filter((weekday) => selected.has(weekday)) };
+    });
+    setDaysError(null);
+  }
+
   async function handleSave() {
     if (!values.name.trim()) {
       setError('Informe o nome.');
+      return;
+    }
+    if (!values.weekdays.length) {
+      setDaysError('Selecione ao menos um dia da semana.');
       return;
     }
     setSaving(true);
@@ -107,16 +127,23 @@ export function RoutineFormDialog({ open, routine, onClose }: RoutineFormDialogP
             onChange={(e) => set('description', e.target.value)}
           />
         </Field>
+        <Field as="div" label="Dias da semana" hint="Selecione um ou mais dias" error={daysError}>
+          <div className="weekday-selector">
+            {WEEKDAY_ORDER.map((day) => (
+              <button
+                key={day}
+                type="button"
+                className="weekday-selector__day"
+                aria-label={WEEKDAY_LABEL[day]}
+                aria-pressed={values.weekdays.includes(day)}
+                onClick={() => toggleWeekday(day)}
+              >
+                {WEEKDAY_SHORT_LABEL[day]}
+              </button>
+            ))}
+          </div>
+        </Field>
         <div className="form-grid">
-          <Field label="Dia da semana">
-            <select className="select" value={values.weekday} onChange={(e) => set('weekday', Number(e.target.value))}>
-              {WEEKDAY_ORDER.map((d) => (
-                <option key={d} value={d}>
-                  {WEEKDAY_LABEL[d]}
-                </option>
-              ))}
-            </select>
-          </Field>
           <Field label="Periodicidade">
             <select
               className="select"
