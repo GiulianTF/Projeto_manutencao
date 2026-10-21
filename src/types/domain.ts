@@ -34,6 +34,7 @@ export type UserRole = 'admin' | 'tecnico';
 export interface Profile {
   id: string;
   full_name: string;
+  email?: string | null;
   role: UserRole;
   active: boolean;
   created_at: string;

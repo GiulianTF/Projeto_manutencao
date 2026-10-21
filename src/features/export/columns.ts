@@ -8,6 +8,7 @@ import {
   OCCURRENCE_STATUS_LABEL,
   PRIORITY_LABEL,
   STATUS_LABEL,
+  WEEKDAY_LABEL,
   type Demand,
   type Routine,
   type RoutineOccurrence,

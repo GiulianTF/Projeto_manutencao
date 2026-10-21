@@ -415,3 +415,16 @@
   border-bottom: 1px solid var(--color-border);
 }
 .team-list__input { flex: 1; min-width: 180px; }
+.team-list__item--managed { min-height: 68px; }
+.team-list__identity { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.team-list__identity > span { font-size: var(--fs-xs); overflow-wrap: anywhere; }
+.team-list__controls { display: flex; align-items: center; gap: var(--space-2); }
+.team-list__role { width: auto; min-width: 150px; }
+.employee-form { display: flex; flex-direction: column; gap: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-border); }
+.employee-form__title { margin: 0; font-size: var(--fs-md); }
+.employee-form__fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: var(--space-3); }
+@media (max-width: 560px) {
+  .team-list__item--managed { align-items: flex-start; flex-direction: column; padding: var(--space-3) 0; }
+  .team-list__controls { width: 100%; }
+  .team-list__role { flex: 1; min-width: 0; }
+}

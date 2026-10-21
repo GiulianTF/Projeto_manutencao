@@ -10,7 +10,19 @@ import type {
   Routine,
   RoutineInput,
   RoutineOccurrence,
+  UserRole,
 } from '@/types/domain';
+
+export interface EmployeeInput {
+  full_name: string;
+  email: string;
+  password: string;
+}
+
+export interface ProfileAccessPatch {
+  role?: UserRole;
+  active?: boolean;
+}
 
 /**
  * Contrato único de acesso a dados. As telas só conhecem esta interface;
@@ -23,6 +35,8 @@ export interface DataStore {
   currentUserId(): Promise<string | null>;
   listProfiles(): Promise<Profile[]>;
   updateProfile(id: string, patch: { full_name: string }): Promise<void>;
+  createEmployee(input: EmployeeInput): Promise<Profile>;
+  updateProfileAccess(id: string, patch: ProfileAccessPatch): Promise<void>;
 
   listDemands(): Promise<Demand[]>;
   getDemand(id: string): Promise<Demand | null>;
@@ -55,7 +69,7 @@ export interface DataStore {
 
 /** Recursos só do modo local (simular usuários sem Supabase). */
 export interface LocalTools {
-  addProfile(fullName: string): Promise<Profile>;
+  addProfile(fullName: string, email?: string | null): Promise<Profile>;
   setCurrentUser(id: string): Promise<void>;
   reset(): Promise<void>;
 }

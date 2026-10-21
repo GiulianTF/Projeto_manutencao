@@ -70,7 +70,7 @@ auth.users ──1:1── profiles (nome, papel, ativo)
 
 | Tabela | Campos principais |
 |---|---|
-| `profiles` | `full_name`, `role` (`admin`/`tecnico`), `active` |
+| `profiles` | `full_name`, `email`, `role` (`admin`/`tecnico`), `active` |
 | `demands` | `code` (nº sequencial), `title`, `description`, `status`, `priority`, `opened_on`, `due_date`, `completed_at`, `observations`, `time_spent_minutes`, `responsible_id`, `created_by`, `updated_by` |
 | `demand_photos` | `demand_id`, `kind` (`antes`/`depois`), `storage_path`, `caption` |
 | `demand_history` | `demand_id`, `actor_id`, `action`, `field`, `old_value`, `new_value`, `created_at` |
@@ -112,12 +112,16 @@ um toque nos chips, sem abrir menus.
 
 ## 5. Fluxo de autenticação
 
-1. Os usuários são criados pelo administrador no painel do Supabase (*Authentication → Add user*),
-   com e-mail e senha. Não existe cadastro público.
-2. O trigger `on_auth_user_created` cria o `profile` (nome vindo de `full_name` ou do e-mail).
+1. O primeiro administrador é criado no painel do Supabase e promovido uma única vez via SQL; o cadastro
+   público fica desativado. A configuração completa está em [CONFIGURAR_ACESSOS.md](CONFIGURAR_ACESSOS.md).
+2. Depois, o administrador cria colaboradores em Configurações. A função de borda usa a chave `service_role`
+   no servidor para criar a conta no Auth; o trigger `on_auth_user_created` cria o perfil como técnico.
 3. No app, `/login` chama `signInWithPassword`; a sessão fica salva no navegador e é renovada sozinha.
-4. `RequireAuth` protege todas as rotas internas. Sem sessão, redireciona para `/login`.
-5. No banco, todas as tabelas têm RLS: só membros ativos (`is_team_member()`) leem ou escrevem.
+   O app também valida que o perfil existe e está ativo.
+4. `RequireAuth` protege todas as rotas internas. Sem sessão válida e perfil ativo, redireciona para `/login`.
+5. No banco, todas as tabelas têm RLS: só membros ativos (`is_team_member()`) leem ou escrevem. A função
+   `admin_update_profile` limita mudanças de papel e status a administradores ativos; colaboradores só podem
+   editar o próprio nome.
 
 > **Modo local:** enquanto o `.env.local` não existir, o app roda sem login e guarda os dados no
 > próprio navegador (localStorage + IndexedDB para as fotos). As telas usam a interface `DataStore`
@@ -219,7 +223,7 @@ itens existe e, se existir, qual a alternativa.
 | # | Etapa | Estado |
 |---|---|---|
 | 0 | Scaffold, design system, layout responsivo, schema do banco | ✅ |
-| 1 | Login (Supabase Auth) + perfis | ✅ código pronto; falta criar o projeto Supabase |
+| 1 | Login, perfis, cadastro e gestão de colaboradores | ✅ código pronto; requer configurar o primeiro admin e publicar a função |
 | 2 | Dashboard com indicadores reais, painéis de atrasadas, próximas e em aberto, e rotinas de hoje | ✅ |
 | 3–4 | Cadastro e edição de demandas, com lista, busca e filtros na URL | ✅ |
 | 5 | Status por chips, com atualização em tempo real | ✅ |

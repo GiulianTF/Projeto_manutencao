@@ -19,7 +19,7 @@ import { photoBlobs } from './idb';
 import { todayISO } from '@/lib/date';
 import { uuid } from '@/lib/id';
 import { applyDemandRules, changesSchedule, diffForHistory, occurrenceDates } from './rules';
-import type { DataStore, LocalTools } from './store';
+import type { DataStore, LocalTools, ProfileAccessPatch } from './store';
 
 const KEY = 'manutencao.localdb.v1';
 
@@ -132,6 +132,38 @@ export const localStore: DataStore & LocalTools = {
     mutate((db) => {
       const p = db.profiles.find((x) => x.id === id);
       if (p) p.full_name = patch.full_name;
+    });
+  },
+
+  async createEmployee(input) {
+    return mutate((db) => {
+      const profile: Profile = {
+        id: uuid(),
+        full_name: input.full_name.trim(),
+        email: input.email.trim().toLowerCase(),
+        role: 'tecnico',
+        active: true,
+        created_at: new Date().toISOString(),
+      };
+      db.profiles.push(profile);
+      return profile;
+    });
+  },
+
+  async updateProfileAccess(id, patch: ProfileAccessPatch) {
+    mutate((db) => {
+      const profile = db.profiles.find((item) => item.id === id);
+      if (!profile) throw new Error('Colaborador não encontrado.');
+      if (id === db.currentUserId && (patch.role !== undefined || patch.active === false)) {
+        throw new Error('Não é possível alterar o próprio acesso.');
+      }
+      const role = patch.role ?? profile.role;
+      const active = patch.active ?? profile.active;
+      if (profile.role === 'admin' && profile.active && (role !== 'admin' || !active)) {
+        const activeAdmins = db.profiles.filter((item) => item.role === 'admin' && item.active).length;
+        if (activeAdmins <= 1) throw new Error('O sistema precisa manter pelo menos um administrador ativo.');
+      }
+      Object.assign(profile, patch);
     });
   },
 
@@ -328,11 +360,12 @@ export const localStore: DataStore & LocalTools = {
   },
 
   // ---------- LocalTools ----------
-  async addProfile(fullName) {
+  async addProfile(fullName, email = null) {
     return mutate((db) => {
       const p: Profile = {
         id: uuid(),
         full_name: fullName,
+        email,
         role: 'tecnico',
         active: true,
         created_at: new Date().toISOString(),
