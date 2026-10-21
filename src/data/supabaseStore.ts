@@ -2,6 +2,7 @@
 // ocorrências) ficam no banco — ver supabase/migrations.
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { compareRoutines } from '@/types/domain';
 import type {
   BackupData,
   Demand,
@@ -15,11 +16,11 @@ import type {
 import { todayISO } from '@/lib/date';
 import { uuid } from '@/lib/id';
 import { changesSchedule } from './rules';
-import type { DataStore } from './store';
+import type { DataStore, EmployeeInput, ProfileAccessPatch } from './store';
 
 const BUCKET = 'demand-photos';
 const SIGNED_URL_TTL = 60 * 60; // 1h
-const REALTIME_TABLES = ['demands', 'demand_photos', 'routines', 'routine_occurrences'];
+const REALTIME_TABLES = ['profiles', 'demands', 'demand_photos', 'routines', 'routine_occurrences'];
 
 function check<T>(res: { data: T | null; error: { message: string } | null }): T {
   if (res.error) throw new Error(res.error.message);
@@ -60,6 +61,32 @@ export function createSupabaseStore(sb: SupabaseClient): DataStore {
 
     async updateProfile(id, patch) {
       await write(sb.from('profiles').update(patch).eq('id', id));
+    },
+
+    async createEmployee(input: EmployeeInput) {
+      const { data, error } = await sb.functions.invoke('gerenciar-colaboradores', {
+        body: { action: 'create', ...input },
+      });
+      if (error) {
+        const response = error.context;
+        if (response instanceof Response) {
+          const body = (await response.json().catch(() => null)) as { error?: string } | null;
+          throw new Error(body?.error ?? error.message);
+        }
+        throw new Error(error.message);
+      }
+      emit();
+      return data as Profile;
+    },
+
+    async updateProfileAccess(id: string, patch: ProfileAccessPatch) {
+      const { error } = await sb.rpc('admin_update_profile', {
+        p_profile_id: id,
+        p_role: patch.role ?? null,
+        p_active: patch.active ?? null,
+      });
+      if (error) throw new Error(error.message);
+      emit();
     },
 
     async listDemands() {
@@ -121,7 +148,7 @@ export function createSupabaseStore(sb: SupabaseClient): DataStore {
     },
 
     async listRoutines() {
-      return check<Routine[]>(await sb.from('routines').select('*').order('weekday').order('name'));
+      return check<Routine[]>(await sb.from('routines').select('*')).sort(compareRoutines);
     },
 
     async createRoutine(input) {

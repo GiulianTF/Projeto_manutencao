@@ -6,7 +6,7 @@ import { useAuth } from '@/features/auth/AuthProvider';
 import { isSupabaseConfigured } from '@/lib/supabase';
 
 export function LoginPage() {
-  const { session, signIn } = useAuth();
+  const { session, authError, signIn } = useAuth();
   const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -64,7 +64,7 @@ export function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </label>
-          {error && <p className="field__error">{error}</p>}
+          {(error ?? authError) && <p className="field__error">{error ?? authError}</p>}
           <Button type="submit" size="lg" block disabled={submitting}>
             {submitting ? 'Entrando…' : 'Entrar'}
           </Button>

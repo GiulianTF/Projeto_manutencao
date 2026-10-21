@@ -18,7 +18,7 @@ export function useOccurrences(from: string, until: string) {
 
   // Assinatura do agendamento: regenera quando uma rotina muda
   const scheduleKey = (routines ?? [])
-    .map((r) => `${r.id}:${r.weekday}:${r.interval_weeks}:${r.starts_on}:${r.active}`)
+    .map((r) => `${r.id}:${r.weekdays.join(',')}:${r.interval_weeks}:${r.starts_on}:${r.active}`)
     .join('|');
 
   useEffect(() => {

@@ -1,6 +1,7 @@
 // Implementação local (localStorage + IndexedDB) usada enquanto o Supabase
 // não está configurado. Sincroniza entre abas, o que permite simular dois usuários.
 
+import { compareRoutines, WEEKDAY_ORDER } from '@/types/domain';
 import type {
   BackupData,
   Demand,
@@ -18,7 +19,7 @@ import { photoBlobs } from './idb';
 import { todayISO } from '@/lib/date';
 import { uuid } from '@/lib/id';
 import { applyDemandRules, changesSchedule, diffForHistory, occurrenceDates } from './rules';
-import type { DataStore, LocalTools } from './store';
+import type { DataStore, LocalTools, ProfileAccessPatch } from './store';
 
 const KEY = 'manutencao.localdb.v1';
 
@@ -32,6 +33,9 @@ interface LocalDB {
   seq: { demand: number; history: number };
   currentUserId: string;
 }
+
+type StoredRoutine = Omit<Routine, 'weekdays'> & { weekdays?: number[]; weekday?: number };
+type StoredLocalDB = Omit<LocalDB, 'routines'> & { routines: StoredRoutine[] };
 
 function seed(): LocalDB {
   const me: Profile = {
@@ -56,7 +60,18 @@ function seed(): LocalDB {
 function load(): LocalDB {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) return JSON.parse(raw) as LocalDB;
+    if (raw) {
+      const stored = JSON.parse(raw) as StoredLocalDB;
+      const routines = stored.routines.map((routine) => {
+        const { weekday, weekdays: storedWeekdays, ...rest } = routine;
+        const candidates = (storedWeekdays ?? []).filter((day) => Number.isInteger(day) && day >= 0 && day <= 6);
+        const selected = new Set(candidates.length ? candidates : [weekday ?? 1]);
+        return { ...rest, weekdays: WEEKDAY_ORDER.filter((day) => selected.has(day)) };
+      });
+      const db: LocalDB = { ...stored, routines };
+      if (stored.routines.some((routine) => routine.weekday !== undefined || !routine.weekdays?.length)) persist(db);
+      return db;
+    }
   } catch {
     // dados corrompidos ou storage bloqueado: recomeça
   }
@@ -117,6 +132,38 @@ export const localStore: DataStore & LocalTools = {
     mutate((db) => {
       const p = db.profiles.find((x) => x.id === id);
       if (p) p.full_name = patch.full_name;
+    });
+  },
+
+  async createEmployee(input) {
+    return mutate((db) => {
+      const profile: Profile = {
+        id: uuid(),
+        full_name: input.full_name.trim(),
+        email: input.email.trim().toLowerCase(),
+        role: 'tecnico',
+        active: true,
+        created_at: new Date().toISOString(),
+      };
+      db.profiles.push(profile);
+      return profile;
+    });
+  },
+
+  async updateProfileAccess(id, patch: ProfileAccessPatch) {
+    mutate((db) => {
+      const profile = db.profiles.find((item) => item.id === id);
+      if (!profile) throw new Error('Colaborador não encontrado.');
+      if (id === db.currentUserId && (patch.role !== undefined || patch.active === false)) {
+        throw new Error('Não é possível alterar o próprio acesso.');
+      }
+      const role = patch.role ?? profile.role;
+      const active = patch.active ?? profile.active;
+      if (profile.role === 'admin' && profile.active && (role !== 'admin' || !active)) {
+        const activeAdmins = db.profiles.filter((item) => item.role === 'admin' && item.active).length;
+        if (activeAdmins <= 1) throw new Error('O sistema precisa manter pelo menos um administrador ativo.');
+      }
+      Object.assign(profile, patch);
     });
   },
 
@@ -220,7 +267,7 @@ export const localStore: DataStore & LocalTools = {
   listHistory: (demandId) =>
     read((db) => db.history.filter((h) => h.demand_id === demandId).sort((a, b) => a.id - b.id)),
 
-  listRoutines: () => read((db) => [...db.routines].sort((a, b) => a.weekday - b.weekday || a.name.localeCompare(b.name))),
+  listRoutines: () => read((db) => [...db.routines].sort(compareRoutines)),
 
   async createRoutine(input: RoutineInput) {
     return mutate((db) => {
@@ -313,11 +360,12 @@ export const localStore: DataStore & LocalTools = {
   },
 
   // ---------- LocalTools ----------
-  async addProfile(fullName) {
+  async addProfile(fullName, email = null) {
     return mutate((db) => {
       const p: Profile = {
         id: uuid(),
         full_name: fullName,
+        email,
         role: 'tecnico',
         active: true,
         created_at: new Date().toISOString(),

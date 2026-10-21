@@ -13,3 +13,5 @@ Thumbs.db
 *.log
 supabase/.temp
 supabase/.branches
+.vercel
+.env*

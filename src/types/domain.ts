@@ -34,6 +34,7 @@ export type UserRole = 'admin' | 'tecnico';
 export interface Profile {
   id: string;
   full_name: string;
+  email?: string | null;
   role: UserRole;
   active: boolean;
   created_at: string;
@@ -89,17 +90,33 @@ export const WEEKDAY_LABEL = [
   'Sábado',
 ] as const;
 
+export const WEEKDAY_SHORT_LABEL = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'] as const;
+export const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0] as const;
+
 export interface Routine {
   id: string;
   name: string;
   description: string | null;
-  weekday: number; // 0 = domingo … 6 = sábado
+  weekdays: number[]; // dias selecionados: 0 = domingo … 6 = sábado
   interval_weeks: number; // 1 = semanal, 2 = quinzenal…
   starts_on: string;
   responsible_id: string | null;
   active: boolean;
   created_at: string;
   updated_at: string;
+}
+
+/** "Segunda, Quarta e Sexta" — passe WEEKDAY_SHORT_LABEL para a forma curta ("Seg, Qua e Sex"). */
+export function weekdaysLabel(weekdays: readonly number[], names: readonly string[] = WEEKDAY_LABEL): string {
+  const labels = WEEKDAY_ORDER.filter((day) => weekdays.includes(day)).map((day) => names[day]);
+  if (labels.length < 2) return labels[0] ?? '';
+  return `${labels.slice(0, -1).join(', ')} e ${labels[labels.length - 1]}`;
+}
+
+export function compareRoutines(a: Routine, b: Routine): number {
+  const firstA = WEEKDAY_ORDER.findIndex((day) => a.weekdays.includes(day));
+  const firstB = WEEKDAY_ORDER.findIndex((day) => b.weekdays.includes(day));
+  return (firstA < 0 ? WEEKDAY_ORDER.length : firstA) - (firstB < 0 ? WEEKDAY_ORDER.length : firstB) || a.name.localeCompare(b.name);
 }
 
 export type OccurrenceStatus = 'pendente' | 'concluida' | 'nao_realizada';
@@ -155,7 +172,7 @@ export interface DemandInput {
 export interface RoutineInput {
   name: string;
   description: string | null;
-  weekday: number;
+  weekdays: number[];
   interval_weeks: number;
   starts_on: string;
   responsible_id: string | null;

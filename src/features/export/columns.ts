@@ -12,6 +12,7 @@ import {
   type Demand,
   type Routine,
   type RoutineOccurrence,
+  weekdaysLabel,
 } from '@/types/domain';
 
 export type CellValue = string | number | Date | null;
@@ -67,7 +68,7 @@ export function routineColumns(ctx: ExportContext): ColumnDef<Routine>[] {
   return [
     { key: 'name', header: 'Rotina', width: 34, wrap: true, value: (r) => r.name },
     { key: 'description', header: 'Descrição', width: 44, wrap: true, value: (r) => r.description },
-    { key: 'weekday', header: 'Dia da semana', width: 16, value: (r) => WEEKDAY_LABEL[r.weekday] },
+    { key: 'weekdays', header: 'Dias da semana', width: 36, wrap: true, value: (r) => weekdaysLabel(r.weekdays) },
     { key: 'interval', header: 'Periodicidade', width: 18, value: (r) => intervalLabel(r.interval_weeks) },
     { key: 'responsible', header: 'Responsável', width: 20, value: (r) => ctx.nameOf(r.responsible_id) },
     { key: 'starts_on', header: 'Início', width: 12, numFmt: DATE_FMT, value: (r) => dateOrNull(r.starts_on) },
