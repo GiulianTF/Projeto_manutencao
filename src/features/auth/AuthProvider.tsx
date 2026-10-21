@@ -25,17 +25,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!supabase) return;
     let mounted = true;
     let revision = 0;
+    // Usuário cujo perfil já foi validado (ou está sendo) nesta sessão do app.
+    let validatedUserId: string | null = null;
+    let checkingUserId: string | null = null;
 
     async function syncSession(next: Session | null) {
-      const request = ++revision;
-      setSession(next);
-      setAuthError(null);
       if (!next) {
+        revision += 1;
+        validatedUserId = null;
+        checkingUserId = null;
+        setSession(null);
         setProfile(null);
         setLoading(false);
         return;
       }
 
+      setSession(next);
+      // Renovação de token, troca de senha e volta à aba repetem o evento para o
+      // mesmo usuário: não revalida, senão a tela desmonta e perde o que foi digitado.
+      // getSession e o evento INITIAL_SESSION também chegam juntos na abertura.
+      if (next.user.id === validatedUserId || next.user.id === checkingUserId) return;
+
+      const request = ++revision;
+      checkingUserId = next.user.id;
+      setAuthError(null);
       setLoading(true);
       try {
         const { data, error } = await supabase!
@@ -52,12 +65,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
         if (!data || !data.active) {
+          // Limpa a sessão já aqui: se ficasse ativa até o signOut terminar, RequireAuth
+          // e LoginPage ficariam redirecionando um para o outro.
+          setSession(null);
           setProfile(null);
+          setAuthError('Acesso desativado. Solicite ajuda ao administrador da equipe.');
           setLoading(false);
-          void supabase!.auth.signOut();
+          void supabase!.auth.signOut({ scope: 'local' });
           return;
         }
 
+        validatedUserId = next.user.id;
         setProfile(data as Profile);
         setLoading(false);
       } catch {
@@ -65,6 +83,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile(null);
         setAuthError('Não foi possível validar seu perfil. Verifique sua conexão e tente novamente.');
         setLoading(false);
+      } finally {
+        // Em caso de erro, o próximo evento tenta validar de novo.
+        if (request === revision) checkingUserId = null;
       }
     }
 
@@ -86,32 +107,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signIn(email: string, password: string): Promise<string | null> {
     if (!supabase) return 'Supabase ainda não configurado (.env.local).';
+    setAuthError(null);
     try {
+      // O perfil (ativo ou não) é validado uma única vez em syncSession, no evento SIGNED_IN.
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) return 'E-mail ou senha inválidos.';
-
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) return 'Não foi possível validar sua conta. Tente novamente.';
-      const { data: member, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, active')
-        .eq('id', userData.user.id)
-        .maybeSingle();
-      if (profileError) {
-        await supabase.auth.signOut();
-        return 'Não foi possível validar seu perfil. Tente novamente.';
-      }
-      if (!member?.active) {
-        await supabase.auth.signOut();
-        return 'Acesso desativado. Solicite ajuda ao administrador da equipe.';
-      }
-      return null;
+      return error ? 'E-mail ou senha inválidos.' : null;
     } catch {
       return 'Não foi possível entrar. Verifique sua conexão e tente novamente.';
     }
   }
 
   async function signOut() {
+    setAuthError(null);
     await supabase?.auth.signOut();
   }
 

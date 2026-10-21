@@ -8,7 +8,7 @@ import { OccurrenceItem } from '@/features/routines/OccurrenceItem';
 import { RoutineFormDialog } from '@/features/routines/RoutineFormDialog';
 import { useOccurrences } from '@/features/routines/useOccurrences';
 import { addDays, formatDate, formatWeekdayShort, parseDateOnly, startOfWeekISO, todayISO } from '@/lib/date';
-import { intervalLabel, weekdaysShortLabel, type Routine } from '@/types/domain';
+import { intervalLabel, WEEKDAY_SHORT_LABEL, weekdaysLabel, type Routine } from '@/types/domain';
 
 type Tab = 'semana' | 'cadastro';
 
@@ -180,7 +180,7 @@ function RoutineCatalog({ onEdit }: { onEdit: (routine: Routine) => void }) {
           <div className="routine-card__info">
             <h3 className="routine-card__name">{r.name}</h3>
             <p className="text-muted routine-card__meta">
-              {weekdaysShortLabel(r.weekdays)} · {intervalLabel(r.interval_weeks)} · {nameOf(r.responsible_id)}
+              {weekdaysLabel(r.weekdays, WEEKDAY_SHORT_LABEL)} · {intervalLabel(r.interval_weeks)} · {nameOf(r.responsible_id)}
             </p>
             {r.description && <p className="routine-card__desc">{r.description}</p>}
           </div>

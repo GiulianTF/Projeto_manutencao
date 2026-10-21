@@ -106,14 +106,9 @@ export interface Routine {
   updated_at: string;
 }
 
-export function weekdaysLabel(weekdays: readonly number[]): string {
-  const labels = WEEKDAY_ORDER.filter((day) => weekdays.includes(day)).map((day) => WEEKDAY_LABEL[day]);
-  if (labels.length < 2) return labels[0] ?? '';
-  return `${labels.slice(0, -1).join(', ')} e ${labels[labels.length - 1]}`;
-}
-
-export function weekdaysShortLabel(weekdays: readonly number[]): string {
-  const labels = WEEKDAY_ORDER.filter((day) => weekdays.includes(day)).map((day) => WEEKDAY_SHORT_LABEL[day]);
+/** "Segunda, Quarta e Sexta" — passe WEEKDAY_SHORT_LABEL para a forma curta ("Seg, Qua e Sex"). */
+export function weekdaysLabel(weekdays: readonly number[], names: readonly string[] = WEEKDAY_LABEL): string {
+  const labels = WEEKDAY_ORDER.filter((day) => weekdays.includes(day)).map((day) => names[day]);
   if (labels.length < 2) return labels[0] ?? '';
   return `${labels.slice(0, -1).join(', ')} e ${labels[labels.length - 1]}`;
 }

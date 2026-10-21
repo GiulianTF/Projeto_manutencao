@@ -76,11 +76,13 @@ Deno.serve(async (request) => {
     return json({ error: message }, 400);
   }
 
-  // O gatilho on_auth_user_created cria o perfil como técnico.
+  // O gatilho on_auth_user_created cria o perfil como técnico inativo (0004);
+  // só uma conta criada por aqui, por um administrador, é ativada.
   const { data: newProfile, error: newProfileError } = await admin
     .from('profiles')
-    .select('*')
+    .update({ active: true })
     .eq('id', created.user.id)
+    .select('*')
     .single();
   if (newProfileError || !newProfile) {
     // Evita deixar uma conta sem perfil se a criação do perfil falhar.

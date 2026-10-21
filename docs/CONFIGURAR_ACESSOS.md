@@ -2,10 +2,10 @@
 
 ## Preparar o Supabase
 
-1. No SQL Editor do projeto, rode as migrações `0001_schema_inicial.sql`, `0002_rotinas_varios_dias.sql` e `0003_admin_colaboradores.sql`, nessa ordem.
-2. Em **Authentication → Settings**, desative o cadastro público de usuários. As contas da equipe devem ser criadas pelo administrador.
+1. No SQL Editor do projeto, rode as migrações `0001_schema_inicial.sql`, `0002_rotinas_varios_dias.sql`, `0003_admin_colaboradores.sql` e `0004_cadastro_inativo_por_padrao.sql`, nessa ordem.
+2. Em **Authentication → Settings**, desative o cadastro público de usuários. As contas da equipe devem ser criadas pelo administrador. (Mesmo que isso fique ligado por engano, a migração `0004` faz toda conta nova nascer **inativa**: só as criadas pela tela Equipe são ativadas.)
 3. Crie a primeira conta em **Authentication → Users → Add user**, usando o e-mail do administrador e uma senha inicial. Confirme o e-mail nessa tela.
-4. No SQL Editor, promova essa conta a administradora. Substitua o endereço pelo e-mail usado no passo anterior:
+4. No SQL Editor, promova essa conta a administradora e ative-a (ela nasce inativa). Substitua o endereço pelo e-mail usado no passo anterior:
 
    ```sql
    update public.profiles p

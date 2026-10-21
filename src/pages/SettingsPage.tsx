@@ -191,7 +191,7 @@ export function SettingsPage() {
                     </strong>
                     <span className="text-muted">{p.email || (localTools ? 'Usuário de teste local' : 'E-mail não cadastrado')}</span>
                   </span>
-                  {localTools && !isCurrentUser ? (
+                  {!isCurrentUser && (isAdmin || localTools) ? (
                     <span className="team-list__controls">
                       {isAdmin && (
                         <>
@@ -214,29 +214,11 @@ export function SettingsPage() {
                           </Button>
                         </>
                       )}
-                      <Button variant="ghost" disabled={!p.active} onClick={() => void localTools?.setCurrentUser(p.id)}>
-                        Usar como este usuário
-                      </Button>
-                    </span>
-                  ) : isAdmin && !isCurrentUser ? (
-                    <span className="team-list__controls">
-                      <select
-                        className="input team-list__role"
-                        aria-label={`Papel de ${p.full_name}`}
-                        value={p.role}
-                        disabled={isUpdating}
-                        onChange={(e) => void updateAccess(p.id, { role: e.target.value as UserRole })}
-                      >
-                        <option value="tecnico">Colaborador</option>
-                        <option value="admin">Administrador</option>
-                      </select>
-                      <Button
-                        variant={p.active ? 'secondary' : 'ghost'}
-                        disabled={isUpdating}
-                        onClick={() => void updateAccess(p.id, { active: !p.active })}
-                      >
-                        {p.active ? 'Desativar' : 'Reativar'}
-                      </Button>
+                      {localTools && (
+                        <Button variant="ghost" disabled={!p.active} onClick={() => void localTools?.setCurrentUser(p.id)}>
+                          Usar como este usuário
+                        </Button>
+                      )}
                     </span>
                   ) : (
                     <span className="text-muted">
